@@ -22,6 +22,7 @@ public class Drivetrain extends Subsystem {
     // Put methods for controlling this subsystem
     // here. Call these from Commands.
 
+    private final double Kp = 1.0, Ki = 0.0, Kd = 0.0;
     private Talon leftFront, leftMiddle, leftBack,
                 rightFront, rightMiddle, rightBack;
     private Relay relay;
@@ -29,6 +30,8 @@ public class Drivetrain extends Subsystem {
     private Compressor compressor;
     
     public Drivetrain(){
+        //super("Drivetrain", Kp, Ki, Kd);
+        //setA 
         leftFront = new Talon(Constants.leftFront);
         leftMiddle = new Talon(Constants.leftMiddle);
         leftBack = new Talon(Constants.leftBack);
@@ -66,7 +69,7 @@ public class Drivetrain extends Subsystem {
         rightFront.set(right);
         rightMiddle.set(right);
         rightBack.set(right);
-        System.out.println("LEFT: " + left + ", RIGHT: " + right);
+        System.out.println("leftEncoder: " + leftEncoder.getDistance() + ", rightEncoder: " + rightEncoder.getDistance());
     }
     
     public void shiftHigh(){
@@ -82,3 +85,4 @@ public class Drivetrain extends Subsystem {
         rightEncoder.reset();
     }
 }
+;
