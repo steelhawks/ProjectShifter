@@ -6,6 +6,7 @@
 package steelhawks.subsystems;
 
 import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Relay;
 import edu.wpi.first.wpilibj.Talon;
@@ -21,10 +22,11 @@ public class Drivetrain extends Subsystem {
     // Put methods for controlling this subsystem
     // here. Call these from Commands.
 
-    Talon leftFront, leftMiddle, leftBack;
-    Talon rightFront, rightMiddle, rightBack;
-    Relay relay;
-    Compressor compressor;
+    private Talon leftFront, leftMiddle, leftBack,
+                rightFront, rightMiddle, rightBack;
+    private Relay relay;
+    private Encoder leftEncoder, rightEncoder;
+    private Compressor compressor;
     
     public Drivetrain(){
         leftFront = new Talon(Constants.leftFront);
@@ -36,7 +38,14 @@ public class Drivetrain extends Subsystem {
         relay = new Relay(Constants.shifter);
         compressor = new Compressor(Constants.pressureGauge, Constants.compressor);
         compressor.start();
-    }
+        
+        leftEncoder = new Encoder(Constants.leftEncoderA, Constants.leftEncoderB);
+        rightEncoder = new Encoder(Constants.rightEncoderA, Constants.rightEncoderB);
+        leftEncoder.setDistancePerPulse(Constants.DISTANCE_PER_PULSE);
+        rightEncoder.setDistancePerPulse(Constants.DISTANCE_PER_PULSE);
+        leftEncoder.start();
+        rightEncoder.start();
+    }   
     
     public void initDefaultCommand() {
         // Set the default command for a subsystem here.
@@ -44,7 +53,7 @@ public class Drivetrain extends Subsystem {
         setDefaultCommand(new Drive());
     }
     
-    public void drive(Joystick leftStick, Joystick rightStick){
+    public void simpleTankDrive(Joystick leftStick, Joystick rightStick){
         double left = leftStick.getY();
         double right = -rightStick.getY();
         if(left>-0.075&&left<0.075) left = 0;
@@ -66,5 +75,10 @@ public class Drivetrain extends Subsystem {
     
     public void shiftLow(){
         relay.set(Relay.Value.kReverse);
+    }
+    
+    public void reset(){
+        leftEncoder.reset();
+        rightEncoder.reset();
     }
 }

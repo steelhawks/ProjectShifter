@@ -17,6 +17,9 @@ public class Constants {
     // public static final int rangefinderPort = 1;
     // public static final int rangefinderModule = 1;
     
+    //Constants
+    public static final int DISTANCE_PER_PULSE = 384 ;//63R128, 3:1
+    
     //Drivetrain
     public static final int rightFront = 1;
     public static final int rightMiddle = 2;
@@ -24,6 +27,10 @@ public class Constants {
     public static final int leftFront = 4;
     public static final int leftMiddle = 5;
     public static final int leftBack = 6;
+    public static final int leftEncoderA = 1;
+    public static final int leftEncoderB = 2;
+    public static final int rightEncoderA = 3;
+    public static final int rightEncoderB = 4;
     
     //Pneumatics
     public static final int compressor = 3;
