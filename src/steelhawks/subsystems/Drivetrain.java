@@ -13,6 +13,9 @@ import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import steelhawks.Constants;
 import steelhawks.commands.Drive;
+import steelhawks.util.EnhancedDrive;
+import steelhawks.util.F310;
+import steelhawks.util.Gamepad;
 
 /**
  *
@@ -25,6 +28,7 @@ public class Drivetrain extends Subsystem {
     private final double Kp = 1.0, Ki = 0.0, Kd = 0.0;
     private Talon leftFront, leftMiddle, leftBack,
                 rightFront, rightMiddle, rightBack;
+    private EnhancedDrive drive;
     private Relay relay;
     private Encoder leftEncoder, rightEncoder;
     private Compressor compressor;
@@ -38,6 +42,8 @@ public class Drivetrain extends Subsystem {
         rightFront = new Talon(Constants.rightFront);
         rightMiddle = new Talon(Constants.rightMiddle);
         rightBack = new Talon(Constants.rightBack);
+        drive = new EnhancedDrive(leftFront, leftMiddle, leftBack, rightFront, rightMiddle, rightBack);
+        drive.setSafetyEnabled(false);
         relay = new Relay(Constants.shifter);
         compressor = new Compressor(Constants.pressureGauge, Constants.compressor);
         compressor.start();
@@ -54,6 +60,25 @@ public class Drivetrain extends Subsystem {
         // Set the default command for a subsystem here.
         //setDefaultCommand(new MySpecialCommand());
         setDefaultCommand(new Drive());
+    }
+    
+    public void arcadeDrive(Joystick leftStick, Joystick rightStick){
+        drive.arcadeDrive(rightStick);
+        System.out.println("leftEncoder: " + leftEncoder.getDistance() + ", rightEncoder: " + rightEncoder.getDistance());
+    }
+    /*
+     public void gTankDrive(Gamepad gamepad){
+        //drive.tankDrive(gamepad.getRawAxis(F310.kGamepadAxisLeftStickY), gamepad.getRawAxis(F310.kGamepadAxisRightStickY));
+        drive.tankDrive(gamepad.getLeftY(), gamepad.getRightY());
+    }
+    */
+    public void gTankDrive(Joystick gamepad){
+        drive.tankDrive(gamepad.getRawAxis(F310.kGamepadAxisLeftStickY), gamepad.getRawAxis(F310.kGamepadAxisRightStickY));
+    }
+    
+    public void tankDrive(Joystick leftStick, Joystick rightStick){
+        drive.tankDrive(leftStick, rightStick);
+        System.out.println("leftEncoder: " + leftEncoder.getDistance() + ", rightEncoder: " + rightEncoder.getDistance());
     }
     
     public void simpleTankDrive(Joystick leftStick, Joystick rightStick){

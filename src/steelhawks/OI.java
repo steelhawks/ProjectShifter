@@ -1,10 +1,11 @@
 
 package steelhawks;
-
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.buttons.Button;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import steelhawks.commands.Shift;
+import steelhawks.util.F310;
+import steelhawks.util.Gamepad;
 
 /**
  * This class is the glue that binds the controls on the physical operator
@@ -18,16 +19,24 @@ public class OI {
     // Joystick stick = new Joystick(port);
     // Button button = new JoystickButton(stick, buttonNumber);
     Joystick leftStick, rightStick;
+    Joystick gamepad;
     
     public OI(){
-        leftStick = new Joystick(1);
-        rightStick = new Joystick(2);
-        Button leftShift = new JoystickButton(leftStick, 1);
-        Button rightShift = new JoystickButton(rightStick, 1);
-        leftShift.whenPressed(new Shift());
-        rightShift.whenPressed(new Shift());
+        //leftStick = new Joystick(1);
+        //rightStick = new Joystick(2);
+        gamepad = new Joystick(1);
+        //Button shift = new JoystickButton(gamepad, 1);
+        //Button leftShift = new JoystickButton(leftStick, 1);
+        //Button rightShift = new JoystickButton(rightStick, 1);
+        //shift.whenPressed(new Shift());
+        //leftShift.whenPressed(new Shift());
+        //rightShift.whenPressed(new Shift());
     }
     
+    public Joystick getGamepad(){
+        return gamepad;
+    }
+    /*
     public Joystick getLeftStick(){
         return leftStick;
     }
@@ -35,7 +44,7 @@ public class OI {
     public Joystick getRightStick(){
         return rightStick;
     }
-    
+    */
     // Another type of button you can create is a DigitalIOButton, which is
     // a button or switch hooked up to the cypress module. These are useful if
     // you want to build a customized operator interface.

@@ -4,9 +4,16 @@
 /* must be accompanied by the FIRST BSD license file in the root directory of */
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
-package edu.wpi.first.wpilibj;
+package steelhawks.util;
 
 import com.sun.squawk.util.MathUtils;
+import edu.wpi.first.wpilibj.CANJaguar;
+import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.Jaguar;
+import edu.wpi.first.wpilibj.MotorSafety;
+import edu.wpi.first.wpilibj.MotorSafetyHelper;
+import edu.wpi.first.wpilibj.PWM;
+import edu.wpi.first.wpilibj.SpeedController;
 import edu.wpi.first.wpilibj.can.CANNotInitializedException;
 import edu.wpi.first.wpilibj.can.CANTimeoutException;
 import edu.wpi.first.wpilibj.communication.UsageReporting;
@@ -20,7 +27,7 @@ import edu.wpi.first.wpilibj.parsing.IUtility;
  * used for either the drive function (intended for hand created drive code, such as autonomous)
  * or with the Tank/Arcade functions intended to be used for Operator Control driving.
  */
-public class EnhancedDrive extends RobotDrive {
+public class EnhancedDrive implements MotorSafety, IUtility{
 
     protected MotorSafetyHelper m_safetyHelper;
 
@@ -35,10 +42,10 @@ public class EnhancedDrive extends RobotDrive {
         public final int value;
         static final int kFrontLeft_val = 0;
         static final int kFrontRight_val = 1;
-        static final int kFrontMiddle_val = 4;
+        static final int kMiddleLeft_val = 4;
+        static final int kMiddleRight_val = 5;
         static final int kRearLeft_val = 2;
         static final int kRearRight_val = 3;
-        static final int kRearMiddle_val = 5;
         
         /**
          * motortype: front left
@@ -51,7 +58,11 @@ public class EnhancedDrive extends RobotDrive {
         /**
          * motortype: front right
          */
-        public static final MotorType kFrontMiddle = new MotorType(kFrontMiddle_val);
+        public static final MotorType kMiddleLeft = new MotorType(kMiddleLeft_val);
+        /**
+         * motortype: front right
+         */
+        public static final MotorType kMiddleRight = new MotorType(kMiddleRight_val);
         /**
          * motortype: rear left
          */
@@ -60,10 +71,6 @@ public class EnhancedDrive extends RobotDrive {
          * motortype: rear right
          */
         public static final MotorType kRearRight = new MotorType(kRearRight_val);
-        /**
-         * motortype: front right
-         */
-        public static final MotorType kRearMiddle = new MotorType(kRearMiddle_val);
         
         private MotorType(int value) {
             this.value = value;
@@ -72,16 +79,16 @@ public class EnhancedDrive extends RobotDrive {
     public static final double kDefaultExpirationTime = 0.1;
     public static final double kDefaultSensitivity = 0.5;
     public static final double kDefaultMaxOutput = 1.0;
-    protected static final int kMaxNumberOfMotors = 4;
-    protected final int m_invertedMotors[] = new int[4];
+    protected static final int kMaxNumberOfMotors = 6;
+    protected final int m_invertedMotors[] = new int[6];
     protected double m_sensitivity;
     protected double m_maxOutput;
     protected SpeedController m_frontLeftMotor;
     protected SpeedController m_frontRightMotor;
-    protected SpeedController m_frontMiddleMotor;
+    protected SpeedController m_middleLeftMotor;
+    protected SpeedController m_middleRightMotor;
     protected SpeedController m_rearLeftMotor;
     protected SpeedController m_rearRightMotor;
-    protected SpeedController m_rearMiddleMotor;
     protected boolean m_allocatedSpeedControllers;
     protected boolean m_isCANInitialized = true;
     protected static boolean kArcadeRatioCurve_Reported = false;
@@ -89,45 +96,25 @@ public class EnhancedDrive extends RobotDrive {
     protected static boolean kArcadeStandard_Reported = false;
     protected static boolean kMecanumCartesian_Reported = false;
     protected static boolean kMecanumPolar_Reported = false;
-
-    /** Constructor for RobotDrive with 2 motors specified with channel numbers.
-     * Set up parameters for a two wheel drive system where the
-     * left and right motor pwm channels are specified in the call.
-     * This call assumes Jaguars for controlling the motors.
-     * @param leftMotorChannel The PWM channel number on the default digital module that drives the left motor.
-     * @param rightMotorChannel The PWM channel number on the default digital module that drives the right motor.
-     */
-    public RobotDrive(final int leftMotorChannel, final int rightMotorChannel) {
-        m_sensitivity = kDefaultSensitivity;
-        m_maxOutput = kDefaultMaxOutput;
-        m_frontLeftMotor = null;
-        m_rearLeftMotor = new Jaguar(leftMotorChannel);
-        m_frontRightMotor = null;
-        m_rearRightMotor = new Jaguar(rightMotorChannel);
-        for (int i = 0; i < kMaxNumberOfMotors; i++) {
-            m_invertedMotors[i] = 1;
-        }
-        m_allocatedSpeedControllers = true;
-        setupMotorSafety();
-        drive(0, 0);
-    }
-
+    
     /**
-     * Constructor for RobotDrive with 4 motors specified with channel numbers.
-     * Set up parameters for a four wheel drive system where all four motor
-     * pwm channels are specified in the call.
-     * This call assumes Jaguars for controlling the motors.
-     * @param frontLeftMotor Front left motor channel number on the default digital module
-     * @param rearLeftMotor Rear Left motor channel number on the default digital module
-     * @param frontRightMotor Front right motor channel number on the default digital module
-     * @param rearRightMotor Rear Right motor channel number on the default digital module
+     * Constructor for EnhancedDrive with 4 motors specified as SpeedController objects.
+     * Speed controller input version of EnhancedDrive (see previous comments).
+     * @param rearLeftMotor The back left SpeedController object used to drive the robot.
+     * @param middleLeftMotor The middle left SpeedController object used to drive the robot.
+     * @param frontLeftMotor The front left SpeedController object used to drive the robot
+     * @param rearRightMotor The back right SpeedController object used to drive the robot.
+     * @param middleRightMotor The middle right SpeedController object used to drive the robot.
+     * @param frontRightMotor The front right SpeedController object used to drive the robot.
      */
-    public RobotDrive(final int frontLeftMotor, final int rearLeftMotor,
-            final int frontRightMotor, final int rearRightMotor) {
+    public EnhancedDrive(final int frontLeftMotor, final int middleLeftMotor, final int rearLeftMotor,
+            final int frontRightMotor, final int middleRightMotor, final int rearRightMotor) {
         m_sensitivity = kDefaultSensitivity;
         m_maxOutput = kDefaultMaxOutput;
         m_rearLeftMotor = new Jaguar(rearLeftMotor);
         m_rearRightMotor = new Jaguar(rearRightMotor);
+        m_middleLeftMotor = new Jaguar(middleLeftMotor);
+        m_middleRightMotor = new Jaguar(middleRightMotor);
         m_frontLeftMotor = new Jaguar(frontLeftMotor);
         m_frontRightMotor = new Jaguar(frontRightMotor);
         for (int i = 0; i < kMaxNumberOfMotors; i++) {
@@ -139,49 +126,26 @@ public class EnhancedDrive extends RobotDrive {
     }
 
     /**
-     * Constructor for RobotDrive with 2 motors specified as SpeedController objects.
-     * The SpeedController version of the constructor enables programs to use the RobotDrive classes with
-     * subclasses of the SpeedController objects, for example, versions with ramping or reshaping of
-     * the curve to suit motor bias or dead-band elimination.
-     * @param leftMotor The left SpeedController object used to drive the robot.
-     * @param rightMotor the right SpeedController object used to drive the robot.
-     */
-    public RobotDrive(SpeedController leftMotor, SpeedController rightMotor) {
-        if (leftMotor == null || rightMotor == null) {
-            m_rearLeftMotor = m_rearRightMotor = null;
-            throw new NullPointerException("Null motor provided");
-        }
-        m_frontLeftMotor = null;
-        m_rearLeftMotor = leftMotor;
-        m_frontRightMotor = null;
-        m_rearRightMotor = rightMotor;
-        m_sensitivity = kDefaultSensitivity;
-        m_maxOutput = kDefaultMaxOutput;
-        for (int i = 0; i < kMaxNumberOfMotors; i++) {
-            m_invertedMotors[i] = 1;
-        }
-        m_allocatedSpeedControllers = false;
-		setupMotorSafety();
-		drive(0, 0);
-    }
-
-    /**
-     * Constructor for RobotDrive with 4 motors specified as SpeedController objects.
-     * Speed controller input version of RobotDrive (see previous comments).
+     * Constructor for EnhancedDrive with 4 motors specified as SpeedController objects.
+     * Speed controller input version of EnhancedDrive (see previous comments).
      * @param rearLeftMotor The back left SpeedController object used to drive the robot.
-     * @param frontLeftMotor The front left SpeedController object used to drive the robot
+     * @param middleLeftMotor The middle left SpeedController object used to drive the robot.
+     * @param frontLeftMotor The front left SpeedController object used to drive the robot.
      * @param rearRightMotor The back right SpeedController object used to drive the robot.
+     * @param middleRightMotor The middle right SpeedController object used to drive the robot.
      * @param frontRightMotor The front right SpeedController object used to drive the robot.
      */
-    public RobotDrive(SpeedController frontLeftMotor, SpeedController rearLeftMotor,
-            SpeedController frontRightMotor, SpeedController rearRightMotor) {
-        if (frontLeftMotor == null || rearLeftMotor == null || frontRightMotor == null || rearRightMotor == null) {
-            m_frontLeftMotor = m_rearLeftMotor = m_frontRightMotor = m_rearRightMotor = null;
+    public EnhancedDrive(SpeedController frontLeftMotor, SpeedController middleLeftMotor, SpeedController rearLeftMotor,
+            SpeedController frontRightMotor, SpeedController middleRightMotor, SpeedController rearRightMotor) {
+        if (frontLeftMotor == null || middleLeftMotor == null || rearLeftMotor == null || frontRightMotor == null || middleRightMotor == null || rearRightMotor == null) {
+            m_frontLeftMotor = m_middleLeftMotor = m_rearLeftMotor = m_frontRightMotor = m_middleRightMotor = m_rearRightMotor = null;
             throw new NullPointerException("Null motor provided");
         }
         m_frontLeftMotor = frontLeftMotor;
+        m_middleLeftMotor = middleLeftMotor;
         m_rearLeftMotor = rearLeftMotor;
         m_frontRightMotor = frontRightMotor;
+        m_middleRightMotor = middleRightMotor;
         m_rearRightMotor = rearRightMotor;
         m_sensitivity = kDefaultSensitivity;
         m_maxOutput = kDefaultMaxOutput;
@@ -465,130 +429,6 @@ public class EnhancedDrive extends RobotDrive {
         this.arcadeDrive(moveValue, rotateValue, true);
     }
 
-    /**
-     * Drive method for Mecanum wheeled robots.
-     *
-     * A method for driving with Mecanum wheeled robots. There are 4 wheels
-     * on the robot, arranged so that the front and back wheels are toed in 45 degrees.
-     * When looking at the wheels from the top, the roller axles should form an X across the robot.
-     *
-     * This is designed to be directly driven by joystick axes.
-     *
-     * @param x The speed that the robot should drive in the X direction. [-1.0..1.0]
-     * @param y The speed that the robot should drive in the Y direction.
-     * This input is inverted to match the forward == -1.0 that joysticks produce. [-1.0..1.0]
-     * @param rotation The rate of rotation for the robot that is completely independent of
-     * the translation. [-1.0..1.0]
-     * @param gyroAngle The current angle reading from the gyro.  Use this to implement field-oriented controls.
-     */
-    public void mecanumDrive_Cartesian(double x, double y, double rotation, double gyroAngle)
-    {
-        if(!kMecanumCartesian_Reported){
-            UsageReporting.report(UsageReporting.kResourceType_RobotDrive, getNumMotors(), UsageReporting.kRobotDrive_MecanumCartesian);
-            kMecanumCartesian_Reported = true;
-        }
-        double xIn = x;
-        double yIn = y;
-        // Negate y for the joystick.
-        yIn = -yIn;
-        // Compenstate for gyro angle.
-        double rotated[] = rotateVector(xIn, yIn, gyroAngle);
-        xIn = rotated[0];
-        yIn = rotated[1];
-
-        double wheelSpeeds[] = new double[kMaxNumberOfMotors];
-        wheelSpeeds[MotorType.kFrontLeft_val] = xIn + yIn + rotation;
-        wheelSpeeds[MotorType.kFrontRight_val] = -xIn + yIn - rotation;
-        wheelSpeeds[MotorType.kRearLeft_val] = -xIn + yIn + rotation;
-        wheelSpeeds[MotorType.kRearRight_val] = xIn + yIn - rotation;
-
-        normalize(wheelSpeeds);
-
-        byte syncGroup = (byte)0x80;
-
-        m_frontLeftMotor.set(wheelSpeeds[MotorType.kFrontLeft_val] * m_invertedMotors[MotorType.kFrontLeft_val] * m_maxOutput, syncGroup);
-        m_frontRightMotor.set(wheelSpeeds[MotorType.kFrontRight_val] * m_invertedMotors[MotorType.kFrontRight_val] * m_maxOutput, syncGroup);
-        m_rearLeftMotor.set(wheelSpeeds[MotorType.kRearLeft_val] * m_invertedMotors[MotorType.kRearLeft_val] * m_maxOutput, syncGroup);
-        m_rearRightMotor.set(wheelSpeeds[MotorType.kRearRight_val] * m_invertedMotors[MotorType.kRearRight_val] * m_maxOutput, syncGroup);
-
-        if (m_isCANInitialized) {
-            try {
-                CANJaguar.updateSyncGroup(syncGroup);
-            } catch (CANNotInitializedException e) {
-                m_isCANInitialized = false;
-            } catch (CANTimeoutException e) {}
-        }
-
-        if (m_safetyHelper != null) m_safetyHelper.feed();
-    }
-
-    /**
-     * Drive method for Mecanum wheeled robots.
-     *
-     * A method for driving with Mecanum wheeled robots. There are 4 wheels
-     * on the robot, arranged so that the front and back wheels are toed in 45 degrees.
-     * When looking at the wheels from the top, the roller axles should form an X across the robot.
-     *
-     * @param magnitude The speed that the robot should drive in a given direction.
-     * @param direction The direction the robot should drive in degrees. The direction and maginitute are
-     * independent of the rotation rate.
-     * @param rotation The rate of rotation for the robot that is completely independent of
-     * the magnitute or direction. [-1.0..1.0]
-     */
-    public void mecanumDrive_Polar(double magnitude, double direction, double rotation) {
-        if(!kMecanumPolar_Reported){
-            UsageReporting.report(UsageReporting.kResourceType_RobotDrive, getNumMotors(), UsageReporting.kRobotDrive_MecanumPolar);
-            kMecanumPolar_Reported = true;
-        }
-        double frontLeftSpeed, rearLeftSpeed, frontRightSpeed, rearRightSpeed;
-        // Normalized for full power along the Cartesian axes.
-        magnitude = limit(magnitude) * Math.sqrt(2.0);
-        // The rollers are at 45 degree angles.
-        double dirInRad = (direction + 45.0) * 3.14159 / 180.0;
-        double cosD = Math.cos(dirInRad);
-        double sinD = Math.sin(dirInRad);
-
-        double wheelSpeeds[] = new double[kMaxNumberOfMotors];
-        wheelSpeeds[MotorType.kFrontLeft_val] = (sinD * magnitude + rotation);
-        wheelSpeeds[MotorType.kFrontRight_val] = (cosD * magnitude - rotation);
-        wheelSpeeds[MotorType.kRearLeft_val] = (cosD * magnitude + rotation);
-        wheelSpeeds[MotorType.kRearRight_val] = (sinD * magnitude - rotation);
-
-        normalize(wheelSpeeds);
-
-        byte syncGroup = (byte)0x80;
-
-        m_frontLeftMotor.set(wheelSpeeds[MotorType.kFrontLeft_val] * m_invertedMotors[MotorType.kFrontLeft_val] * m_maxOutput, syncGroup);
-        m_frontRightMotor.set(wheelSpeeds[MotorType.kFrontRight_val] * m_invertedMotors[MotorType.kFrontRight_val] * m_maxOutput, syncGroup);
-        m_rearLeftMotor.set(wheelSpeeds[MotorType.kRearLeft_val] * m_invertedMotors[MotorType.kRearLeft_val] * m_maxOutput, syncGroup);
-        m_rearRightMotor.set(wheelSpeeds[MotorType.kRearRight_val] * m_invertedMotors[MotorType.kRearRight_val] * m_maxOutput, syncGroup);
-
-        if (m_isCANInitialized) {
-            try {
-                CANJaguar.updateSyncGroup(syncGroup);
-            } catch (CANNotInitializedException e) {
-                m_isCANInitialized = false;
-            } catch (CANTimeoutException e) {}
-        }
-
-        if (m_safetyHelper != null) m_safetyHelper.feed();
-    }
-
-    /**
-     * Holonomic Drive method for Mecanum wheeled robots.
-     *
-     * This is an alias to mecanumDrive_Polar() for backward compatability
-     *
-     * @param magnitude The speed that the robot should drive in a given direction.  [-1.0..1.0]
-     * @param direction The direction the robot should drive. The direction and maginitute are
-     * independent of the rotation rate.
-     * @param rotation The rate of rotation for the robot that is completely independent of
-     * the magnitute or direction.  [-1.0..1.0]
-     */
-    void holonomicDrive(float magnitude, float direction, float rotation) {
-        mecanumDrive_Polar(magnitude, direction, rotation);
-    }
-
     /** Set the speed of the right and left motors.
      * This is used once an appropriate drive setup function is called such as
      * twoWheelDrive(). The motors are set to "leftSpeed" and "rightSpeed"
@@ -606,11 +446,13 @@ public class EnhancedDrive extends RobotDrive {
         if (m_frontLeftMotor != null) {
             m_frontLeftMotor.set(limit(leftOutput) * m_invertedMotors[MotorType.kFrontLeft_val] * m_maxOutput, syncGroup);
         }
+        m_middleLeftMotor.set(limit(leftOutput) * m_invertedMotors[MotorType.kMiddleLeft_val] * m_maxOutput, syncGroup);
         m_rearLeftMotor.set(limit(leftOutput) * m_invertedMotors[MotorType.kRearLeft_val] * m_maxOutput, syncGroup);
-
+        
         if (m_frontRightMotor != null) {
             m_frontRightMotor.set(-limit(rightOutput) * m_invertedMotors[MotorType.kFrontRight_val] * m_maxOutput, syncGroup);
         }
+        m_middleRightMotor.set(-limit(rightOutput) * m_invertedMotors[MotorType.kMiddleRight_val] * m_maxOutput, syncGroup);
         m_rearRightMotor.set(-limit(rightOutput) * m_invertedMotors[MotorType.kRearRight_val] * m_maxOutput, syncGroup);
 
         if (m_isCANInitialized) {
@@ -690,7 +532,7 @@ public class EnhancedDrive extends RobotDrive {
     }
 
     /**
-     * Configure the scaling factor for using RobotDrive with motor controllers in a mode other than PercentVbus.
+     * Configure the scaling factor for using EnhancedDrive with motor controllers in a mode other than PercentVbus.
      * @param maxOutput Multiplied with the output percentage computed by the drive functions.
      */
     public void setMaxOutput(double maxOutput)
@@ -709,6 +551,12 @@ public class EnhancedDrive extends RobotDrive {
             }
             if (m_frontRightMotor != null) {
                 ((PWM) m_frontRightMotor).free();
+            }
+            if (m_middleLeftMotor != null) {
+                ((PWM) m_middleLeftMotor).free();
+            }
+            if (m_middleRightMotor != null) {
+                ((PWM) m_middleRightMotor).free();
             }
             if (m_rearLeftMotor != null) {
                 ((PWM) m_rearLeftMotor).free();
@@ -750,6 +598,12 @@ public class EnhancedDrive extends RobotDrive {
         if (m_frontRightMotor != null) {
             m_frontRightMotor.set(0.0);
         }
+        if (m_middleLeftMotor != null){
+            m_middleLeftMotor.set(0.0);
+        }
+        if (m_middleRightMotor != null){
+            m_middleRightMotor.set(0.0);
+        }
         if (m_rearLeftMotor != null) {
             m_rearLeftMotor.set(0.0);
         }
@@ -769,6 +623,8 @@ public class EnhancedDrive extends RobotDrive {
         int motors = 0;
         if (m_frontLeftMotor != null) motors++;
         if (m_frontRightMotor != null) motors++;
+        if (m_middleLeftMotor != null) motors++;
+        if (m_middleRightMotor != null) motors++;
         if (m_rearLeftMotor != null) motors++;
         if (m_rearRightMotor != null) motors++;
         return motors;
