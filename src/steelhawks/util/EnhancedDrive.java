@@ -4,7 +4,7 @@
 /* must be accompanied by the FIRST BSD license file in the root directory of */
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
-<<<<<<< HEAD
+
 package steelhawks.util;
 
 import com.sun.squawk.util.MathUtils;
@@ -15,11 +15,9 @@ import edu.wpi.first.wpilibj.MotorSafety;
 import edu.wpi.first.wpilibj.MotorSafetyHelper;
 import edu.wpi.first.wpilibj.PWM;
 import edu.wpi.first.wpilibj.SpeedController;
-=======
-package edu.wpi.first.wpilibj;
 
 import com.sun.squawk.util.MathUtils;
->>>>>>> 9da3a9a507cb54964ddd05db026d03673fe3c760
+
 import edu.wpi.first.wpilibj.can.CANNotInitializedException;
 import edu.wpi.first.wpilibj.can.CANTimeoutException;
 import edu.wpi.first.wpilibj.communication.UsageReporting;
@@ -33,11 +31,9 @@ import edu.wpi.first.wpilibj.parsing.IUtility;
  * used for either the drive function (intended for hand created drive code, such as autonomous)
  * or with the Tank/Arcade functions intended to be used for Operator Control driving.
  */
-<<<<<<< HEAD
+
 public class EnhancedDrive implements MotorSafety, IUtility{
-=======
 public class EnhancedDrive extends RobotDrive {
->>>>>>> 9da3a9a507cb54964ddd05db026d03673fe3c760
 
     protected MotorSafetyHelper m_safetyHelper;
 
