@@ -14,6 +14,8 @@ import edu.wpi.first.wpilibj.Joystick;
  * Wireless Gamepad F710 (untested, but it has the exact same layout as the
  * F310).
  * @author kevin
+ * 
+ * Thank you to Team 694 (prog694) for this class.
  */
 public class Gamepad extends Joystick {
     public Gamepad(int port) {
