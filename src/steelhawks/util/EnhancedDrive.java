@@ -304,7 +304,31 @@ public class EnhancedDrive implements MotorSafety, IUtility{
     public void tankDrive(double leftValue, double rightValue) {
         tankDrive(leftValue, rightValue, true);
     }
+    
+    /**
+     * Provide tank steering using the stored robot configuration.
+     * This function lets you directly provide joystick values from any source.
+     * Joystick values are limited by the specified deadband minimum and maximum.
+     * @param leftValue The value of the left stick.
+     * @param rightValue The value of the right stick.
+     */
+    public void tankDrive(double leftValue, double rightValue, double min, double max){
+        if(leftValue>min&&leftValue<max) leftValue = 0.0;
+        if(rightValue>min&&rightValue<max) rightValue = 0.0;
+        tankDrive(leftValue, rightValue, true);
+    }
 
+    /**
+     * Cheesy drive implements double stick driving.
+     * One joystick controls throttle in the Y axis.
+     * One joystick controls rotation in the X axis.
+     * @param throttleValue The value to use for forward/backward movement.
+     * @param rotationValue The value to use for left/right rotation.
+     */
+    public void cheesyDrive(double throttleValue, double rotationValue){
+        arcadeDrive(throttleValue, rotationValue, true);
+    }
+    
     /**
      * Arcade drive implements single stick driving.
      * Given a single Joystick, the class assumes the Y axis for the move value and the X axis

@@ -18,6 +18,8 @@ public class Constants {
     // public static final int rangefinderModule = 1;
     
     //Constants
+    public static final double DEADBAND_MIN = -0.075;
+    public static final double DEADBAND_MAX = 0.075;
     public static final int DISTANCE_PER_PULSE = 384 ;//63R128, 3:1
     
     //Drivetrain

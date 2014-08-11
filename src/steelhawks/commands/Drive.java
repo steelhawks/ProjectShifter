@@ -5,6 +5,8 @@
  */
 package steelhawks.commands;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 /**
  *
  * @author Neil
@@ -25,7 +27,8 @@ public class Drive extends CommandBase {
     protected void execute() {
         //drivetrain.tankDrive(oi.getLeftStick(), oi.getRightStick();
         //drivetrain.arcadeDrive(oi.getLeftStick(), oi.getRightStick());
-        drivetrain.tankDrive(oi.getGamepad());
+        //drivetrain.tankDrive(oi.getGamepad());
+        drivetrain.cheesyDrive(oi.getGamepad());
     }
 
     // Make this return true when this Command no longer needs to run execute()

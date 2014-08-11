@@ -20,16 +20,18 @@ public class OI {
     // Button button = new JoystickButton(stick, buttonNumber);
     Joystick leftStick, rightStick;
     Joystick gamepad;
-    JoystickButton shift;
+    JoystickButton lShift, rShift;
     
     public OI(){
         //leftStick = new Joystick(1);
         //rightStick = new Joystick(2);
         gamepad = new Joystick(1);
-        shift = new JoystickButton(gamepad, 1);
+        lShift = new JoystickButton(gamepad, F310.kGamepadButtonShoulderL);
+        rShift = new JoystickButton(gamepad, F310.kGamepadButtonShoulderR);
         //Button leftShift = new JoystickButton(leftStick, 1);
         //Button rightShift = new JoystickButton(rightStick, 1);
-        shift.whenPressed(new Shift());
+        rShift.whenPressed(new Shift());
+        lShift.whenPressed(new Shift());
         //leftShift.whenPressed(new Shift());
         //rightShift.whenPressed(new Shift());
     }
