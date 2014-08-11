@@ -20,12 +20,13 @@ public class OI {
     // Button button = new JoystickButton(stick, buttonNumber);
     Joystick leftStick, rightStick;
     Joystick gamepad;
+    JoystickButton shift;
     
     public OI(){
         //leftStick = new Joystick(1);
         //rightStick = new Joystick(2);
         gamepad = new Joystick(1);
-        Button shift = new JoystickButton(gamepad, 1);
+        shift = new JoystickButton(gamepad, 1);
         //Button leftShift = new JoystickButton(leftStick, 1);
         //Button rightShift = new JoystickButton(rightStick, 1);
         shift.whenPressed(new Shift());

@@ -72,7 +72,7 @@ public class Drivetrain extends Subsystem {
         drive.tankDrive(gamepad.getLeftY(), gamepad.getRightY());
     }
     */
-    public void gTankDrive(Joystick gamepad){
+    public void tankDrive(Joystick gamepad){
         drive.tankDrive(gamepad.getRawAxis(F310.kGamepadAxisLeftStickY), gamepad.getRawAxis(F310.kGamepadAxisRightStickY));
     }
     
