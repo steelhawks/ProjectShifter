@@ -10,12 +10,14 @@ import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Relay;
 import edu.wpi.first.wpilibj.Talon;
+import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Subsystem;
-import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import steelhawks.Constants;
+import steelhawks.commands.CheesyDrive;
 import steelhawks.commands.Drive;
+import steelhawks.commands.TankDrive;
 import steelhawks.util.EnhancedDrive;
 import steelhawks.util.F310;
 
@@ -28,7 +30,7 @@ public class Drivetrain extends Subsystem {
     // here. Call these from Commands.
 
     private final double Kp = 1.0, Ki = 0.0, Kd = 0.0;
-    private NetworkTable table = NetworkTable.getTable("dataTable");
+    //private NetworkTable table = NetworkTable.getTable("dataTable");
     private Talon leftFront, leftMiddle, leftBack,
                 rightFront, rightMiddle, rightBack;
     private EnhancedDrive drive;
@@ -36,10 +38,9 @@ public class Drivetrain extends Subsystem {
     private boolean rightHanded = false;
     private Encoder leftEncoder, rightEncoder;
     private Compressor compressor;
+    private Command mode;
     
     public Drivetrain(){
-        //super("Drivetrain", Kp, Ki, Kd);
-        //setA 
         leftFront = new Talon(Constants.leftFront);
         leftMiddle = new Talon(Constants.leftMiddle);
         leftBack = new Talon(Constants.leftBack);
@@ -59,8 +60,7 @@ public class Drivetrain extends Subsystem {
         leftEncoder.start();
         rightEncoder.start();
         
-        LiveWindow.addSensor("Drivetrain", "leftEncoder", leftEncoder);
-        LiveWindow.addSensor("Drivetrain", "rightEncoder", rightEncoder);
+        //table.putBoolean("RHT", true);
     }   
     
     public void initDefaultCommand() {
@@ -69,10 +69,18 @@ public class Drivetrain extends Subsystem {
         setDefaultCommand(new Drive());
     }
     
+    public void drive(Joystick gamepad){
+        //if(mode.equals(new TankDrive())) tankDrive(gamepad);
+        //if(mode.equals(new CheesyDrive())) cheesyDrive(gamepad);
+        cheesyDrive(gamepad);
+        //System.out.println(mode.toString());
+    }
+    
     public void arcadeDrive(Joystick leftStick, Joystick rightStick){
         drive.arcadeDrive(rightStick);
         System.out.println("leftEncoder: " + leftEncoder.getDistance() + ", rightEncoder: " + rightEncoder.getDistance());
     }
+    
     /*
      public void gTankDrive(Gamepad gamepad){
         //drive.tankDrive(gamepad.getRawAxis(F310.kGamepadAxisLeftStickY), gamepad.getRawAxis(F310.kGamepadAxisRightStickY));
@@ -81,15 +89,16 @@ public class Drivetrain extends Subsystem {
     */
     
     public void cheesyDrive(Joystick gamepad){
-        if(rightHanded) drive.cheesyDrive(gamepad.getRawAxis(F310.kGamepadAxisRightStickY), F310.kGamepadAxisLeftStickX);
-        else drive.cheesyDrive(gamepad.getRawAxis(F310.kGamepadAxisLeftStickX), F310.kGamepadAxisRightStickY);
+        //if(table.getBoolean("RHT", true))
+        drive.cheesyDrive(gamepad.getRawAxis(F310.kGamepadAxisRightStickY), gamepad.getRawAxis(F310.kGamepadAxisLeftStickX));
+        //else drive.cheesyDrive(gamepad.getRawAxis(F310.kGamepadAxisLeftStickX), F310.kGamepadAxisRightStickY);
     }
     
     public void tankDrive(Joystick gamepad){
-        SmartDashboard.putDouble("leftEncoder", leftEncoder.getDistance());
-        SmartDashboard.putDouble("rightEncoder", rightEncoder.getDistance());
+        SmartDashboard.putDouble("leftEncoder", leftEncoder.get());
+        SmartDashboard.putDouble("rightEncoder", rightEncoder.get());
         drive.tankDrive(gamepad.getRawAxis(F310.kGamepadAxisLeftStickY), gamepad.getRawAxis(F310.kGamepadAxisRightStickY), Constants.DEADBAND_MIN, Constants.DEADBAND_MAX);
-        System.out.println("leftEncoder: " + leftEncoder.getDistance() + ", rightEncoder: " + rightEncoder.getDistance());
+        System.out.println("leftEncoder: " + leftEncoder.get() + ", raw: " + leftEncoder.getRaw() + "; rightEncoder: " + rightEncoder.getDistance() + ", raw: " + rightEncoder.getRaw());
     }
     
     public void tankDrive(Joystick leftStick, Joystick rightStick){
@@ -125,5 +134,9 @@ public class Drivetrain extends Subsystem {
         leftEncoder.reset();
         rightEncoder.reset();
     }
+    
+    public void setMode(Command c){
+        mode = c;
+    }
+    
 }
-;

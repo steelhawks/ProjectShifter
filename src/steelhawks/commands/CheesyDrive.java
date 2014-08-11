@@ -5,15 +5,13 @@
  */
 package steelhawks.commands;
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
 /**
  *
  * @author Neil
  */
-public class Drive extends CommandBase {
+public class CheesyDrive extends CommandBase {
     
-    public Drive() {
+    public CheesyDrive() {
         // Use requires() here to declare subsystem dependencies
         // eg. requires(chassis);
         requires(drivetrain);
@@ -25,11 +23,7 @@ public class Drive extends CommandBase {
 
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
-        //drivetrain.tankDrive(oi.getLeftStick(), oi.getRightStick();
-        //drivetrain.arcadeDrive(oi.getLeftStick(), oi.getRightStick());
-        //drivetrain.tankDrive(oi.getGamepad());
-        //drivetrain.cheesyDrive(oi.getGamepad());
-        drivetrain.drive(oi.getGamepad());
+        //drivetrain.setMode()
     }
 
     // Make this return true when this Command no longer needs to run execute()

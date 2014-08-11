@@ -326,7 +326,16 @@ public class EnhancedDrive implements MotorSafety, IUtility{
      * @param rotationValue The value to use for left/right rotation.
      */
     public void cheesyDrive(double throttleValue, double rotationValue){
-        arcadeDrive(throttleValue, rotationValue, true);
+        arcadeDrive(throttleValue, rotationValue, false);
+    }
+    
+    /*
+     * Not like anybody reads this shit
+    */
+    public void cheesyDrive(double throttleValue, double rotationValue, double min, double max){
+        if(throttleValue>min&&throttleValue<max) throttleValue = 0.0;
+        if(rotationValue>min&&rotationValue<max) rotationValue = 0.0;
+        cheesyDrive(throttleValue, rotationValue);
     }
     
     /**
