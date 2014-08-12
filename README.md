@@ -11,4 +11,4 @@ To do:
 - [ ] Add inertia controls
 - [ ] Add encoder feedback (PID control, moving in a straight line)
 - [x] Adapt buttons/joysticks for gamepad
-- [ ] Try CheesyDrive
+- [x] Try CheesyDrive
