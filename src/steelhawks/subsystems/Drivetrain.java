@@ -72,7 +72,8 @@ public class Drivetrain extends Subsystem {
     public void drive(Joystick gamepad){
         //if(mode.equals(new TankDrive())) tankDrive(gamepad);
         //if(mode.equals(new CheesyDrive())) cheesyDrive(gamepad);
-        cheesyDrive(gamepad);
+        tankDrive(gamepad);
+        //cheesyDrive(gamepad);
         //System.out.println(mode.toString());
     }
     
