@@ -25,7 +25,7 @@ public class Drive extends CommandBase {
 
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
-        //drivetrain.tankDrive(oi.getLeftStick(), oi.getRightStick();
+        //drivetrain.tankDrive(oi.getLeftStick(), oi.getRightStick());
         //drivetrain.arcadeDrive(oi.getLeftStick(), oi.getRightStick());
         //drivetrain.tankDrive(oi.getGamepad());
         //drivetrain.cheesyDrive(oi.getGamepad());

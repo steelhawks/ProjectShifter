@@ -39,7 +39,7 @@ public class OI {
     public Joystick getGamepad(){
         return gamepad;
     }
-    /*
+    
     public Joystick getLeftStick(){
         return leftStick;
     }
@@ -47,7 +47,7 @@ public class OI {
     public Joystick getRightStick(){
         return rightStick;
     }
-    */
+    
     // Another type of button you can create is a DigitalIOButton, which is
     // a button or switch hooked up to the cypress module. These are useful if
     // you want to build a customized operator interface.

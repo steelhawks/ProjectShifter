@@ -14,6 +14,7 @@ public class TankDrive extends CommandBase {
     public TankDrive() {
         // Use requires() here to declare subsystem dependencies
         // eg. requires(chassis);
+        requires(drivetrain);
     }
 
     // Called just before this Command runs the first time
@@ -22,6 +23,7 @@ public class TankDrive extends CommandBase {
 
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
+        drivetrain.arcadeDrive(oi.getLeftStick(), oi.getRightStick());
     }
 
     // Make this return true when this Command no longer needs to run execute()

@@ -67,12 +67,15 @@ public class Drivetrain extends Subsystem {
         // Set the default command for a subsystem here.
         //setDefaultCommand(new MySpecialCommand());
         setDefaultCommand(new Drive());
+        //setDefaultCommand(new TankDrive());
     }
     
     public void drive(Joystick gamepad){
         //if(mode.equals(new TankDrive())) tankDrive(gamepad);
         //if(mode.equals(new CheesyDrive())) cheesyDrive(gamepad);
         tankDrive(gamepad);
+        //arcadeDrive(OI)
+        //tankDrive(leftStick, rightStick);
         //cheesyDrive(gamepad);
         //System.out.println(mode.toString());
     }
@@ -96,15 +99,20 @@ public class Drivetrain extends Subsystem {
     }
     
     public void tankDrive(Joystick gamepad){
-        SmartDashboard.putDouble("leftEncoder", leftEncoder.get());
-        SmartDashboard.putDouble("rightEncoder", rightEncoder.get());
+        SmartDashboard.putNumber("leftEncoder", leftEncoder.get());
+        SmartDashboard.putNumber(""
+                + "rightEncoder", rightEncoder.get());
         drive.tankDrive(gamepad.getRawAxis(F310.kGamepadAxisLeftStickY), gamepad.getRawAxis(F310.kGamepadAxisRightStickY), Constants.DEADBAND_MIN, Constants.DEADBAND_MAX);
-        System.out.println("leftEncoder: " + leftEncoder.get() + ", raw: " + leftEncoder.getRaw() + "; rightEncoder: " + rightEncoder.getDistance() + ", raw: " + rightEncoder.getRaw());
+        System.out.println("TD: " + "leftEncoder: " + leftEncoder.get() + ", raw: " + leftEncoder.getRaw() + "; rightEncoder: " + rightEncoder.getDistance() + ", raw: " + rightEncoder.getRaw());
     }
     
     public void tankDrive(Joystick leftStick, Joystick rightStick){
+        SmartDashboard.putDouble("leftEncoder", leftEncoder.get());
+        SmartDashboard.putDouble("rightEncoder", rightEncoder.get());
+        System.out.println(leftFront.get() + ", " + leftMiddle.get() + ", " + leftBack.get() + "; "
+                            + rightFront.get() + ", " + rightMiddle.get() + ", " + rightBack.get());
         drive.tankDrive(leftStick, rightStick);
-        System.out.println("leftEncoder: " + leftEncoder.getDistance() + ", rightEncoder: " + rightEncoder.getDistance());
+        //System.out.println("leftEncoder: " + leftEncoder.getDistance() + ", rightEncoder: " + rightEncoder.getDistance());
     }
     
     public void simpleTankDrive(Joystick leftStick, Joystick rightStick){
